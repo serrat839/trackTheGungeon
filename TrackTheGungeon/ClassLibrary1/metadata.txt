@@ -1,0 +1,8 @@
+﻿# Lines beginning with # are comment lines
+
+Name: TrackTheGungeon
+Version: 0.00
+
+DLL: TrackTheGungeon.dll
+
+Depends: Base 0.2
