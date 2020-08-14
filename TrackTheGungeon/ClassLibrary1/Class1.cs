@@ -49,11 +49,15 @@ namespace TrackTheGungeon
 			// when using this mod. Does the crosshair wind longer when the session is longer????
 			orig(self, gameOverSource);
 
+			Console.WriteLine("run data");
+			var x = GameManager.Instance.PrimaryPlayer;
+			string asdf = x.passiveItems[0].DisplayName;
+			asdf = "{\"guns\": \"" + asdf + "\"}";
 			// some kind of processing here of user inventory
 			// Send a string formatted as JSON to webclient
 			client.UploadStringAsync(
 				new System.Uri(baseUrl + "/runEnd", uriKind: UriKind.Absolute),
-				"{\"guns\": \"GUNS\"}");
+				asdf;
 		}
 
 		// Function to test GET requests
