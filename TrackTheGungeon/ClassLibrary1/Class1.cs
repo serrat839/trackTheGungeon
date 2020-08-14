@@ -53,18 +53,37 @@ namespace TrackTheGungeon
 			var x = GameManager.Instance.PrimaryPlayer;
 			string items = "{";
 
-			items += "\"guns\": [";
+			// I know this is kinda garbage code but I am about to go to work so i couldnt be bothered to fix it
+			items += "\"passive\": [";
 			items += String.Format("\"{0}\"", x.passiveItems[0].DisplayName);
 			for (int i = 1; i < x.passiveItems.Count; i++)
 			{
 				items += ", ";
 				items += String.Format("\"{0}\"", x.passiveItems[i].DisplayName);
 			}
-			items += "]";
-			//ListToJSON(x.activeItems, "active");
-			//ListToJSON(x.inventory.AllGuns(), "guns"); // name is in gunName
+			items += "],";
 
-			items += "}";
+			items += "\"active\": [";
+			items += String.Format("\"{0}\"", x.activeItems[0].DisplayName);
+			for (int i = 1; i < x.activeItems.Count; i++)
+			{
+				items += ", ";
+				items += String.Format("\"{0}\"", x.activeItems[i].DisplayName);
+			}
+			items += "],";
+
+            items += "\"guns\": [";
+            items += String.Format("\"{0}\"", x.inventory.AllGuns[0].DisplayName);
+            for (int i = 1; i < x.inventory.AllGuns.Count; i++)
+            {
+                items += ", ";
+                items += String.Format("\"{0}\"", x.inventory.AllGuns[i].DisplayName);
+            }
+            items += "]";
+
+            items += "}";
+
+			Console.WriteLine(items);
 
 
 			// some kind of processing here of user inventory
