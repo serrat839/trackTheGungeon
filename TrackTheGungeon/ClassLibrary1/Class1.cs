@@ -19,14 +19,15 @@ namespace TrackTheGungeon
 		// Initializes things internal to my mod
 		public override void Init()
 		{
-			Console.WriteLine($"TEST TrackTheGungeon.init()");
-			// query is ?user
-			// hook DoQuickRestart
-			// hook DoMainMenu
+			// Create new webclient ONCE for use throughout game session
 			client = new System.Net.WebClient();
 			client.Headers[HttpRequestHeader.ContentType] = "application/json";
 
+			// Set the base uri/url for the webserver
 			baseUrl = "http://127.0.0.1:8000";
+			
+			// Hook the gameover function.
+			// Maybe it would be better to hook the OpenAmmonomicon function, this way victory is handled as well
 			Hook hook = new Hook(
 				typeof(GameManager).GetMethod("DoGameOver", BindingFlags.Public | BindingFlags.Instance),
 				typeof(Class1).GetMethod("DoGameOverData", BindingFlags.Public | BindingFlags.Instance),
@@ -38,14 +39,26 @@ namespace TrackTheGungeon
 		
 		// Func<gameMangager, string, string(?)>
 		// ^ dont use func, use Action if your return is void!!!
+		// Replacement function for DoGameOver that sends user's run data to webserver
+		// orig - Original DoGameOver function, automatically passed by hook
+		// GameManager self - original object this method is from
+		// String gameOverSource - source of game over
 		public void DoGameOverData(Action<GameManager, string> orig, GameManager self, string gameOverSource = "")
 		{
-			client.UploadString(
+			// for some reason, the crosshair clock winding is not winding completely/for a long time
+			// when using this mod. Does the crosshair wind longer when the session is longer????
+			orig(self, gameOverSource);
+
+			// some kind of processing here of user inventory
+			// Send a string formatted as JSON to webclient
+			client.UploadStringAsync(
 				new System.Uri(baseUrl + "/runEnd", uriKind: UriKind.Absolute),
 				"{\"guns\": \"GUNS\"}");
-			orig(self, gameOverSource);
 		}
 
+		// Function to test GET requests
+		// url - string containing url of webserver
+		// user - string containing user information
 		public void GetRequest(string url, string user)
 		{
 			// System.Uri uri = new System.Uri(url + "?user=GUNGEON");
