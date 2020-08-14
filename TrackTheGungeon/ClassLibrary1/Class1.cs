@@ -36,7 +36,7 @@ namespace TrackTheGungeon
 
 			
 		}
-		
+
 		// Func<gameMangager, string, string(?)>
 		// ^ dont use func, use Action if your return is void!!!
 		// Replacement function for DoGameOver that sends user's run data to webserver
@@ -51,14 +51,29 @@ namespace TrackTheGungeon
 
 			Console.WriteLine("run data");
 			var x = GameManager.Instance.PrimaryPlayer;
-			string asdf = x.passiveItems[0].DisplayName;
-			asdf = "{\"guns\": \"" + asdf + "\"}";
+			string items = "{";
+
+			items += "\"guns\": [";
+			items += String.Format("\"{0}\"", x.passiveItems[0].DisplayName);
+			for (int i = 1; i < x.passiveItems.Count; i++)
+			{
+				items += ", ";
+				items += String.Format("\"{0}\"", x.passiveItems[i].DisplayName);
+			}
+			items += "]";
+			//ListToJSON(x.activeItems, "active");
+			//ListToJSON(x.inventory.AllGuns(), "guns"); // name is in gunName
+
+			items += "}";
+
+
 			// some kind of processing here of user inventory
 			// Send a string formatted as JSON to webclient
 			client.UploadStringAsync(
 				new System.Uri(baseUrl + "/runEnd", uriKind: UriKind.Absolute),
-				asdf;
+				items);
 		}
+
 
 		// Function to test GET requests
 		// url - string containing url of webserver
