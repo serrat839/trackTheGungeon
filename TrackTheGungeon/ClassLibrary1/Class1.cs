@@ -24,36 +24,25 @@ namespace TrackTheGungeon
 			// hook DoQuickRestart
 			// hook DoMainMenu
 			client = new System.Net.WebClient();
-			baseUrl = "http://127.0.0.1:8000";
-			GetRequest(baseUrl, "Gungeon Startup");
+			client.Headers[HttpRequestHeader.ContentType] = "application/json";
 
+			baseUrl = "http://127.0.0.1:8000";
 			Hook hook = new Hook(
 				typeof(GameManager).GetMethod("DoGameOver", BindingFlags.Public | BindingFlags.Instance),
 				typeof(Class1).GetMethod("DoGameOverData", BindingFlags.Public | BindingFlags.Instance),
 				this
 			);
 
-
-			// test out post
-			NameValueCollection runData = new NameValueCollection() {
-				{"guns", "gun gun gun"}
-			};
-			byte[] UploadValues = client.UploadValues(baseUrl + "/runEnd", runData);
-
-			//client.Headers.Add("");
-			// string s = Encoding.ASCII.GetString(client.UploadData(baseUrl, "GET", ""));
+			
 		}
 		
 		// Func<gameMangager, string, string(?)>
 		// ^ dont use func, use Action if your return is void!!!
 		public void DoGameOverData(Action<GameManager, string> orig, GameManager self, string gameOverSource = "")
 		{
-			GetRequest(baseUrl, "Gungeon Death");
-			NameValueCollection runData = new NameValueCollection() {
-				{"guns", "gun gun gun"}
-			};
-            byte[] UploadValues = client.UploadValues(baseUrl + "/runEnd", runData);
-
+			client.UploadString(
+				new System.Uri(baseUrl + "/runEnd", uriKind: UriKind.Absolute),
+				"{\"guns\": \"GUNS\"}");
 			orig(self, gameOverSource);
 		}
 
