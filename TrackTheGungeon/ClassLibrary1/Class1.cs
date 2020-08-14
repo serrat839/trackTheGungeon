@@ -1,15 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Linq;
 using System.Text;
 using System.Net;
+using System.Reflection;
 using System.Security.Policy;
+using MonoMod.RuntimeDetour;
+using System.Collections;
 
 namespace TrackTheGungeon
 {
     public class Class1 : ETGModule
     {
 		private string baseUrl;
+		private System.Net.WebClient client;
 
 		// Initializes things internal to my mod
 		public override void Init()
@@ -18,17 +23,44 @@ namespace TrackTheGungeon
 			// query is ?user
 			// hook DoQuickRestart
 			// hook DoMainMenu
-			baseUrl = "http://127.0.0.1:8000/track";
+			client = new System.Net.WebClient();
+			baseUrl = "http://127.0.0.1:8000";
+			GetRequest(baseUrl, "Gungeon Startup");
+
+			Hook hook = new Hook(
+				typeof(GameManager).GetMethod("DoGameOver", BindingFlags.Public | BindingFlags.Instance),
+				typeof(Class1).GetMethod("DoGameOverData", BindingFlags.Public | BindingFlags.Instance),
+				this
+			);
+
+
+			// test out post
+			NameValueCollection runData = new NameValueCollection() {
+				{"guns", "gun gun gun"}
+			};
+			byte[] UploadValues = client.UploadValues(baseUrl + "/runEnd", runData);
+
 			//client.Headers.Add("");
 			// string s = Encoding.ASCII.GetString(client.UploadData(baseUrl, "GET", ""));
-			GetRequest(baseUrl);
+		}
+		
+		// Func<gameMangager, string, string(?)>
+		// ^ dont use func, use Action if your return is void!!!
+		public void DoGameOverData(Action<GameManager, string> orig, GameManager self, string gameOverSource = "")
+		{
+			GetRequest(baseUrl, "Gungeon Death");
+			NameValueCollection runData = new NameValueCollection() {
+				{"guns", "gun gun gun"}
+			};
+            byte[] UploadValues = client.UploadValues(baseUrl + "/runEnd", runData);
+
+			orig(self, gameOverSource);
 		}
 
-		public static void GetRequest(string url)
+		public void GetRequest(string url, string user)
 		{
-			System.Net.WebClient client = new System.Net.WebClient();
 			// System.Uri uri = new System.Uri(url + "?user=GUNGEON");
-			var response = client.DownloadString(url + "?user=GUNGEON") ;
+			var response = client.DownloadString(url + "/track" + "?user=" + user) ;
 		}
 
 		// Called after mods are initialized. Allows interaction between mods
