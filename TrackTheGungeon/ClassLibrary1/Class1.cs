@@ -55,29 +55,29 @@ namespace TrackTheGungeon
 
 			// I know this is kinda garbage code but I am about to go to work so i couldnt be bothered to fix it
 			items += "\"passive\": [";
-			items += String.Format("\"{0}\"", x.passiveItems[0].DisplayName);
+			items += String.Format("\"{0}\"", x.passiveItems[0].EncounterNameOrDisplayName);
 			for (int i = 1; i < x.passiveItems.Count; i++)
 			{
 				items += ", ";
-				items += String.Format("\"{0}\"", x.passiveItems[i].DisplayName);
+				items += String.Format("\"{0}\"", x.passiveItems[i].EncounterNameOrDisplayName);
 			}
 			items += "],";
 
 			items += "\"active\": [";
-			items += String.Format("\"{0}\"", x.activeItems[0].DisplayName);
+			items += String.Format("\"{0}\"", x.activeItems[0].EncounterNameOrDisplayName);
 			for (int i = 1; i < x.activeItems.Count; i++)
 			{
 				items += ", ";
-				items += String.Format("\"{0}\"", x.activeItems[i].DisplayName);
+				items += String.Format("\"{0}\"", x.activeItems[i].EncounterNameOrDisplayName);
 			}
 			items += "],";
 
             items += "\"guns\": [";
-            items += String.Format("\"{0}\"", x.inventory.AllGuns[0].DisplayName);
+            items += String.Format("\"{0}\"", x.inventory.AllGuns[0].EncounterNameOrDisplayName);
             for (int i = 1; i < x.inventory.AllGuns.Count; i++)
             {
                 items += ", ";
-                items += String.Format("\"{0}\"", x.inventory.AllGuns[i].DisplayName);
+                items += String.Format("\"{0}\"", x.inventory.AllGuns[i].EncounterNameOrDisplayName);
             }
             items += "]";
 
