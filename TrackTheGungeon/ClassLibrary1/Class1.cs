@@ -1,13 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
-using System.Linq;
-using System.Text;
 using System.Net;
 using System.Reflection;
-using System.Security.Policy;
 using MonoMod.RuntimeDetour;
-using System.Collections;
 
 namespace TrackTheGungeon
 {
@@ -37,85 +32,109 @@ namespace TrackTheGungeon
 			
 		}
 
-		// Func<gameMangager, string, string(?)>
-		// ^ dont use func, use Action if your return is void!!!
-		// Replacement function for DoGameOver that sends user's run data to webserver
-		// orig - Original DoGameOver function, automatically passed by hook
-		// GameManager self - original object this method is from
-		// String gameOverSource - source of game over
+		/**
+		 * Replacement function for DoGameOver that sends user's run data to webserver
+         * Action<GameManager, string> orig - Original DoGameOver function, automatically passed by hook. Action is
+         *  used since return is void
+         * GameManager self - original object this method is from
+         * String gameOverSource - source of game over
+		 */
 		public void DoGameOverData(Action<GameManager, string> orig, GameManager self, string gameOverSource = "")
 		{
-			// for some reason, the crosshair clock winding is not winding completely/for a long time
-			// when using this mod. Does the crosshair wind longer when the session is longer????
+			// Begin gameover sequence
 			orig(self, gameOverSource);
 
-			ETGModConsole.Log("Sorting my run data...");
-			var x = GameManager.Instance.PrimaryPlayer;
+
+
+			// Parse player data and send it to the server
+			var player = GameManager.Instance.PrimaryPlayer;
+			var stats = GameStatsManager.Instance;
+			string schema = "v1.0";
+
 			string items = "{";
+			items += String.Format("\"{0}\":  \"{1}\", ", "schema", schema);
+			items += String.Format("\"{0}\":  {1}, ", "metadata", GameMetaJSON(
+				player.characterIdentity.ToString(),
+				stats.GetSessionStatValue(TrackedStats.ENEMIES_KILLED).ToString(),
+				GameManager.Instance.Dungeon.DungeonShortName,
+				player.carriedConsumables.Currency.ToString(),
+				stats.GetSessionStatValue(TrackedStats.TOTAL_MONEY_COLLECTED).ToString(),
+				stats.IsRainbowRun.ToString(),
+				player.CharacterUsesRandomGuns.ToString(),
+				stats.isTurboMode.ToString(),
+				ChallengeManager.CHALLENGE_MODE_ACTIVE.ToString()
+			));
 
-			// I know this is kinda garbage code but I am about to go to work so i couldnt be bothered to fix it
-			items += "\"passive\": [";
-			if (x.passiveItems.Count > 0)
-			{ 
-				items += String.Format("\"{0}\"", x.passiveItems[0].EncounterNameOrDisplayName);
-				for (int i = 1; i < x.passiveItems.Count; i++)
-				{
-					items += ", ";
-					items += String.Format("\"{0}\"", x.passiveItems[i].EncounterNameOrDisplayName);
-				}
-			}
-			items += "],";
-
-			ETGModConsole.Log("Still vibing1");
-
-			items += "\"active\": [";
-			if (x.activeItems.Count > 0)
-			{
-				items += String.Format("\"{0}\"", x.activeItems[0].EncounterNameOrDisplayName);
-				for (int i = 1; i < x.activeItems.Count; i++)
-				{
-					items += ", ";
-					items += String.Format("\"{0}\"", x.activeItems[i].EncounterNameOrDisplayName);
-				}
-			}
-			items += "],";
-
-			ETGModConsole.Log("Still vibing2");
-
-			items += "\"guns\": [";
-			if (x.inventory.AllGuns.Count > 0)
-			{
-				items += String.Format("\"{0}\"", x.inventory.AllGuns[0].EncounterNameOrDisplayName);
-				for (int i = 1; i < x.inventory.AllGuns.Count; i++)
-				{
-					items += ", ";
-					items += String.Format("\"{0}\"", x.inventory.AllGuns[i].EncounterNameOrDisplayName);
-				}
-			}
-            items += "]";
-
+			items += Jsonify("passive", player.passiveItems.ConvertAll(obj => (PickupObject)obj));
+			items += Jsonify("active", player.activeItems.ConvertAll(obj => (PickupObject)obj));
+			items += Jsonify("guns", player.inventory.AllGuns.ConvertAll(obj => (PickupObject)obj), true);
             items += "}";
+						
 
-
-			ETGModConsole.Log("Storing Run Data...");
-			ETGModConsole.Log(items);
-
-
-			// some kind of processing here of user inventory
-			// Send a string formatted as JSON to webclient
+			// Send user data to server
 			client.UploadStringAsync(
 				new System.Uri(baseUrl + "/runEnd", uriKind: UriKind.Absolute),
 				items);
 		}
 
+		/**
+		 * Helper function to organize and JSONIFY run data
+		 * string gungeoneer - The gungeoneer being used
+		 * string kills - number of enemies killed
+		 * string carried_money - carried money
+		 * string total_money - total money acquired throughout run
+		 * string rainbow - rainbow run boolean
+		 * string blessed - blessed run boolean
+		 * string turbo - turbo run boolean
+		 * string challenge - challenge run boolean 
+		 */
+		private string GameMetaJSON(string gungeoneer, string kills, string floor, string carried_money, string total_money, string rainbow, string blessed, string turbo, string challenge)
+        {
+			string jsonData = "{";
+			jsonData += String.Format("\"{0}\":  \"{1}\", ", "gungeoneer", gungeoneer);
+			jsonData += String.Format("\"{0}\":  \"{1}\", ", "kills", kills);
+			jsonData += String.Format("\"{0}\":  \"{1}\", ", "floor", floor);
+			jsonData += String.Format("\"{0}\":  \"{1}\", ", "carried_money", carried_money);
+			jsonData += String.Format("\"{0}\":  \"{1}\", ", "total_money", total_money);
+			jsonData += String.Format("\"{0}\":  \"{1}\", ", "rainbow", rainbow);
+			jsonData += String.Format("\"{0}\":  \"{1}\", ", "blessed", blessed);
+			jsonData += String.Format("\"{0}\":  \"{1}\", ", "turbo", turbo);
+			jsonData += String.Format("\"{0}\":  \"{1}\"", "challenge", challenge);
+			jsonData += "}";
+			return jsonData;
+        }
 
-		// Function to test GET requests
-		// url - string containing url of webserver
-		// user - string containing user information
-		public void GetRequest(string url, string user)
-		{
-			// System.Uri uri = new System.Uri(url + "?user=GUNGEON");
-			var response = client.DownloadString(url + "/track" + "?user=" + user) ;
+		/**
+		 * Helper function to convert lists into json formatted strings
+		 * string category - The key that the JSON will use
+		 * List<PickupObject> items - A list of PickupObjects that we want to convert to a JSON string
+		 * Boolean last - Controls wether or not our data should be followed by a comma
+		 */
+		private string Jsonify(string category, List<PickupObject> items, Boolean last = false)
+        {
+			// set the key
+			string jsonString = String.Format("\"{0}\": [", category);
+
+			// if our list actually exists
+			if (items.Count > 0)
+			{
+
+				// fencepost the first item then cycle through rest of list
+				jsonString += String.Format("\"{0}\"", items[0].EncounterNameOrDisplayName);
+				for (int i = 1; i < items.Count; i++)
+				{
+					jsonString += ", ";
+					jsonString += String.Format("\"{0}\"", items[i].EncounterNameOrDisplayName);
+				}
+			}
+			jsonString += "]";
+
+			// if not last element of json...
+			if (!last)
+            {
+				jsonString += ",";
+            }
+			return jsonString;
 		}
 
 		// Called after mods are initialized. Allows interaction between mods
