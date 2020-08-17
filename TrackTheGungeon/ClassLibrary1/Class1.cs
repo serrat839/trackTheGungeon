@@ -49,41 +49,56 @@ namespace TrackTheGungeon
 			// when using this mod. Does the crosshair wind longer when the session is longer????
 			orig(self, gameOverSource);
 
-			Console.WriteLine("run data");
+			ETGModConsole.Log("Sorting my run data...");
 			var x = GameManager.Instance.PrimaryPlayer;
 			string items = "{";
 
 			// I know this is kinda garbage code but I am about to go to work so i couldnt be bothered to fix it
 			items += "\"passive\": [";
-			items += String.Format("\"{0}\"", x.passiveItems[0].EncounterNameOrDisplayName);
-			for (int i = 1; i < x.passiveItems.Count; i++)
-			{
-				items += ", ";
-				items += String.Format("\"{0}\"", x.passiveItems[i].EncounterNameOrDisplayName);
+			if (x.passiveItems.Count > 0)
+			{ 
+				items += String.Format("\"{0}\"", x.passiveItems[0].EncounterNameOrDisplayName);
+				for (int i = 1; i < x.passiveItems.Count; i++)
+				{
+					items += ", ";
+					items += String.Format("\"{0}\"", x.passiveItems[i].EncounterNameOrDisplayName);
+				}
 			}
 			items += "],";
+
+			ETGModConsole.Log("Still vibing1");
 
 			items += "\"active\": [";
-			items += String.Format("\"{0}\"", x.activeItems[0].EncounterNameOrDisplayName);
-			for (int i = 1; i < x.activeItems.Count; i++)
+			if (x.activeItems.Count > 0)
 			{
-				items += ", ";
-				items += String.Format("\"{0}\"", x.activeItems[i].EncounterNameOrDisplayName);
+				items += String.Format("\"{0}\"", x.activeItems[0].EncounterNameOrDisplayName);
+				for (int i = 1; i < x.activeItems.Count; i++)
+				{
+					items += ", ";
+					items += String.Format("\"{0}\"", x.activeItems[i].EncounterNameOrDisplayName);
+				}
 			}
 			items += "],";
 
-            items += "\"guns\": [";
-            items += String.Format("\"{0}\"", x.inventory.AllGuns[0].EncounterNameOrDisplayName);
-            for (int i = 1; i < x.inventory.AllGuns.Count; i++)
-            {
-                items += ", ";
-                items += String.Format("\"{0}\"", x.inventory.AllGuns[i].EncounterNameOrDisplayName);
-            }
+			ETGModConsole.Log("Still vibing2");
+
+			items += "\"guns\": [";
+			if (x.inventory.AllGuns.Count > 0)
+			{
+				items += String.Format("\"{0}\"", x.inventory.AllGuns[0].EncounterNameOrDisplayName);
+				for (int i = 1; i < x.inventory.AllGuns.Count; i++)
+				{
+					items += ", ";
+					items += String.Format("\"{0}\"", x.inventory.AllGuns[i].EncounterNameOrDisplayName);
+				}
+			}
             items += "]";
 
             items += "}";
 
-			Console.WriteLine(items);
+
+			ETGModConsole.Log("Storing Run Data...");
+			ETGModConsole.Log(items);
 
 
 			// some kind of processing here of user inventory
