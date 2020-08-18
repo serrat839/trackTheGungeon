@@ -73,6 +73,7 @@ namespace TrackTheGungeon
             items += "}";
 
 			float sessionStatValue = GameStatsManager.Instance.GetSessionStatValue(TrackedStats.TIME_PLAYED);
+			ETGModConsole.Log(sessionStatValue.ToString());
 
 			// Send user data to server
 			client.UploadStringAsync(
