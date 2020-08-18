@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Net;
 using System.Reflection;
 using MonoMod.RuntimeDetour;
+using UnityEngine;
 
 namespace TrackTheGungeon
 {
@@ -51,6 +52,7 @@ namespace TrackTheGungeon
 			var stats = GameStatsManager.Instance;
 			string schema = "v1.0";
 
+			// helpfully found in AmmonomiconDeathPageController
 			string items = "{";
 			items += String.Format("\"{0}\":  \"{1}\", ", "schema", schema);
 			items += String.Format("\"{0}\":  {1}, ", "metadata", GameMetaJSON(
@@ -69,7 +71,8 @@ namespace TrackTheGungeon
 			items += Jsonify("active", player.activeItems.ConvertAll(obj => (PickupObject)obj));
 			items += Jsonify("guns", player.inventory.AllGuns.ConvertAll(obj => (PickupObject)obj), true);
             items += "}";
-						
+
+			float sessionStatValue = GameStatsManager.Instance.GetSessionStatValue(TrackedStats.TIME_PLAYED);
 
 			// Send user data to server
 			client.UploadStringAsync(
