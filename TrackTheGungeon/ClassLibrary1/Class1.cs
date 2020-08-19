@@ -49,12 +49,12 @@ namespace TrackTheGungeon
 			// Parse player data and send it to the server
 			var player = GameManager.Instance.PrimaryPlayer;
 			var stats = GameStatsManager.Instance;
-			string schema = "v1.0";
+			string schema = "v1.1";
 
 			// helpfully found in AmmonomiconDeathPageController
 			string items = "{";
 			items += String.Format("\"{0}\":  \"{1}\", ", "schema", schema);
-			items += String.Format("\"{0}\":  \"{1}\", ", "isVictory", isDeath.ToString());
+			items += String.Format("\"{0}\":  \"{1}\", ", "isVictory", isVictory.ToString());
 			items += String.Format("\"{0}\":  {1}, ", "metadata", GameMetaJSON(
 				player.characterIdentity.ToString(),
 				Math.Floor(stats.GetSessionStatValue(TrackedStats.TIME_PLAYED)).ToString(),
