@@ -20,7 +20,7 @@ namespace TrackTheGungeon
 			// Hook the gameover function.
 			// Maybe it would be better to hook the OpenAmmonomicon function, this way victory is handled as well
 			Hook hook = new Hook(
-				typeof(GameManager).GetMethod("DoGameOver", BindingFlags.Public | BindingFlags.Instance),
+				typeof(AmmonomiconController).GetMethod("OpenAmmonomicon", BindingFlags.Public | BindingFlags.Instance),
 				typeof(Class1).GetMethod("DoGameOverData", BindingFlags.Public | BindingFlags.Instance),
 				this
 			);
@@ -35,11 +35,19 @@ namespace TrackTheGungeon
          * GameManager self - original object this method is from
          * String gameOverSource - source of game over
 		 */
-		public void DoGameOverData(Action<GameManager, string> orig, GameManager self, string gameOverSource = "")
+		public void DoGameOverData(Action<AmmonomiconController, bool, bool> orig, AmmonomiconController self, bool isDeath, bool isVictory)
 		{
 			// Begin gameover sequence
-			orig(self, gameOverSource);
+			orig(self, isDeath, isVictory);
 
+			if(!(isDeath || isVictory))
+            {
+				ETGModConsole.Log("Opening ammonomicon but not for death lmao");
+				return;
+            }
+
+
+			ETGModConsole.Log("Opening ammonomicon but for death lmao");
 
 
 			// Parse player data and send it to the server
