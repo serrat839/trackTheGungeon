@@ -42,13 +42,8 @@ namespace TrackTheGungeon
 
 			if(!(isDeath || isVictory))
             {
-				ETGModConsole.Log("Opening ammonomicon but not for death lmao");
 				return;
             }
-
-
-			ETGModConsole.Log("Opening ammonomicon but for death lmao");
-
 
 			// Parse player data and send it to the server
 			var player = GameManager.Instance.PrimaryPlayer;
@@ -83,8 +78,6 @@ namespace TrackTheGungeon
 					new System.Uri(baseUrl + "/runEnd", uriKind: UriKind.Absolute),
 					items);
 			}
-			// Send user data to server
-			
 		}
 
 		/**
