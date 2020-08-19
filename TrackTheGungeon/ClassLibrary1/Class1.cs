@@ -54,6 +54,7 @@ namespace TrackTheGungeon
 			// helpfully found in AmmonomiconDeathPageController
 			string items = "{";
 			items += String.Format("\"{0}\":  \"{1}\", ", "schema", schema);
+			items += String.Format("\"{0}\":  \"{1}\", ", "isVictory", isDeath.ToString());
 			items += String.Format("\"{0}\":  {1}, ", "metadata", GameMetaJSON(
 				player.characterIdentity.ToString(),
 				Math.Floor(stats.GetSessionStatValue(TrackedStats.TIME_PLAYED)).ToString(),
