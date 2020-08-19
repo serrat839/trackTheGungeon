@@ -10,15 +10,10 @@ namespace TrackTheGungeon
     public class Class1 : ETGModule
     {
 		private string baseUrl;
-		private System.Net.WebClient client;
 
 		// Initializes things internal to my mod
 		public override void Init()
 		{
-			// Create new webclient ONCE for use throughout game session
-			client = new System.Net.WebClient();
-			client.Headers[HttpRequestHeader.ContentType] = "application/json";
-
 			// Set the base uri/url for the webserver
 			baseUrl = "http://127.0.0.1:8000";
 			
@@ -57,6 +52,7 @@ namespace TrackTheGungeon
 			items += String.Format("\"{0}\":  \"{1}\", ", "schema", schema);
 			items += String.Format("\"{0}\":  {1}, ", "metadata", GameMetaJSON(
 				player.characterIdentity.ToString(),
+				Math.Floor(stats.GetSessionStatValue(TrackedStats.TIME_PLAYED)).ToString(),
 				stats.GetSessionStatValue(TrackedStats.ENEMIES_KILLED).ToString(),
 				GameManager.Instance.Dungeon.DungeonShortName,
 				player.carriedConsumables.Currency.ToString(),
@@ -65,25 +61,28 @@ namespace TrackTheGungeon
 				player.CharacterUsesRandomGuns.ToString(),
 				stats.isTurboMode.ToString(),
 				ChallengeManager.CHALLENGE_MODE_ACTIVE.ToString()
-			));
+			)); ;
 
 			items += Jsonify("passive", player.passiveItems.ConvertAll(obj => (PickupObject)obj));
 			items += Jsonify("active", player.activeItems.ConvertAll(obj => (PickupObject)obj));
 			items += Jsonify("guns", player.inventory.AllGuns.ConvertAll(obj => (PickupObject)obj), true);
             items += "}";
 
-			float sessionStatValue = GameStatsManager.Instance.GetSessionStatValue(TrackedStats.TIME_PLAYED);
-			ETGModConsole.Log(sessionStatValue.ToString());
-
+			using (System.Net.WebClient client = new System.Net.WebClient())
+			{
+				client.Headers[HttpRequestHeader.ContentType] = "application/json";
+				client.UploadStringAsync(
+					new System.Uri(baseUrl + "/runEnd", uriKind: UriKind.Absolute),
+					items);
+			}
 			// Send user data to server
-			client.UploadStringAsync(
-				new System.Uri(baseUrl + "/runEnd", uriKind: UriKind.Absolute),
-				items);
+			
 		}
 
 		/**
 		 * Helper function to organize and JSONIFY run data
 		 * string gungeoneer - The gungeoneer being used
+		 * string duration - the length of the run in seconds
 		 * string kills - number of enemies killed
 		 * string carried_money - carried money
 		 * string total_money - total money acquired throughout run
@@ -92,10 +91,11 @@ namespace TrackTheGungeon
 		 * string turbo - turbo run boolean
 		 * string challenge - challenge run boolean 
 		 */
-		private string GameMetaJSON(string gungeoneer, string kills, string floor, string carried_money, string total_money, string rainbow, string blessed, string turbo, string challenge)
+		private string GameMetaJSON(string gungeoneer, string duration, string kills, string floor, string carried_money, string total_money, string rainbow, string blessed, string turbo, string challenge)
         {
 			string jsonData = "{";
 			jsonData += String.Format("\"{0}\":  \"{1}\", ", "gungeoneer", gungeoneer);
+			jsonData += String.Format("\"{0}\":  \"{1}\", ", "duration", duration);
 			jsonData += String.Format("\"{0}\":  \"{1}\", ", "kills", kills);
 			jsonData += String.Format("\"{0}\":  \"{1}\", ", "floor", floor);
 			jsonData += String.Format("\"{0}\":  \"{1}\", ", "carried_money", carried_money);
