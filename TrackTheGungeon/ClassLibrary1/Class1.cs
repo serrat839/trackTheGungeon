@@ -29,11 +29,12 @@ namespace TrackTheGungeon
 		}
 
 		/**
-		 * Replacement function for DoGameOver that sends user's run data to webserver
-         * Action<GameManager, string> orig - Original DoGameOver function, automatically passed by hook. Action is
+		 * Replacement function for OpenAmmonomicon that sends user's run data to webserver
+         * Action<GameManager, bool, bool> orig - Original OpenAmmonomicon function, automatically passed by hook. Action is
          *  used since return is void
-         * GameManager self - original object this method is from
-         * String gameOverSource - source of game over
+         * AmmonomiconController self - original object this method is from
+         * bool isDeath - Ammonomicon opening bc player died
+         * bool isVictory - Ammonomicon opening bc player won
 		 */
 		public void DoGameOverData(Action<AmmonomiconController, bool, bool> orig, AmmonomiconController self, bool isDeath, bool isVictory)
 		{
